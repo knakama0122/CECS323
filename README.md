@@ -1,2 +1,0 @@
-# CECS323
-CECS 323 JDBC project
