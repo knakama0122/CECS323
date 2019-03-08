@@ -1,5 +1,4 @@
-# CECS323
-CECS 323 JDBC Project
+# CECS 323 JDBC Project
 
 • Create a .sql file for the DDL and run this script to create the
   database, tables, etc.
