@@ -78,6 +78,92 @@ public class JDBC {
                 se.printStackTrace();
             }
         }
+            public static void menu(Connection conn) throws SQLException
+    {
+        int x = 1;
+        Statement stmt = null;
+        String sql = null;
+        ResultSet rs = null;
+        Scanner in = new Scanner(System.in);
+        while(x != 0)
+        {
+            printMenu();
+            x = in.nextInt();
+            switch(x){
+                case 1: 
+                //STEP 4: Execute a query
+                    System.out.println("Creating statement...");
+                    stmt = conn.createStatement();
+                    sql = "SELECT groupname, booktitle, publishername, yearpublished, numberpages FROM book";
+                    rs = stmt.executeQuery(sql);
+                //STEP 5: Extract data from result set
+                    System.out.printf(BOOK_DISPLAY_FORMAT, "Group Name","Book Title", "Publisher Name", "Year Published", "# of Pages");
+                    while (rs.next()) {
+                    //Retrieve by column name
+                    String group = rs.getString("groupname");
+                    String title = rs.getString("booktitle");
+                    String publisher = rs.getString("publishername");
+                    String year = rs.getString("yearpublished");
+                    String pages = rs.getString("numberpages");
+                    //Display values
+                    System.out.printf(BOOK_DISPLAY_FORMAT,
+                        dispNull(group), dispNull(title), dispNull(publisher), dispNull(year), dispNull(pages));
+                    }
+                break;
+                case 2: 
+                //STEP 4: Execute a query
+                    System.out.println("Creating statement...");
+                    stmt = conn.createStatement();
+                    sql = "SELECT PublisherName, PublisherAddress, PublisherPhone, PublisherEmail FROM Publisher";
+                    rs = stmt.executeQuery(sql);
+                //STEP 5: Extract data from result set
+                    System.out.printf(PUBLISHER_DISPLAY_FORMAT, "Publisher Name","Address", "Phone Number", "Email Address");
+                    while (rs.next()) {
+                    //Retrieve by column name
+                    String pname = rs.getString("PublisherName");
+                    String paddr = rs.getString("PublisherAddress");
+                    String pphone = rs.getString("PublisherPhone");
+                    String pemail = rs.getString("PublisherEmail");
+                    //Display values
+                    System.out.printf(PUBLISHER_DISPLAY_FORMAT,
+                        dispNull(pname), dispNull(paddr), dispNull(pphone), dispNull(pemail));
+                    }
+                break;
+                case 3: 
+                //STEP 4: Execute a query
+                    System.out.println("Creating statement...");
+                    stmt = conn.createStatement();
+                    sql = "SELECT GroupName, HeadWriter, YearFormed, Subject FROM WritingGroup";
+                    rs = stmt.executeQuery(sql);
+                //STEP 5: Extract data from result set
+                    System.out.printf(WRITING_DISPLAY_FORMAT, "Group Name","Head Writer", "Year Formed", "Subject");
+                    while (rs.next()) {
+                    //Retrieve by column name
+                    String gname = rs.getString("GroupName");
+                    String hwriter = rs.getString("HeadWriter");
+                    String year = rs.getString("YearFormed");
+                    String subject = rs.getString("Subject");
+                    //Display values
+                    System.out.printf(WRITING_DISPLAY_FORMAT,
+                        dispNull(gname), dispNull(hwriter), dispNull(year), dispNull(subject));
+                    }
+                break;    
+                case 0:
+                break;
+            }
+        }
+        rs.close();
+        stmt.close();
+    }
+    
+    public static void printMenu()
+    {
+        System.out.println("(1) Display Books");
+        System.out.println("(2) Display Publishers");
+        System.out.println("(3) Display Writing Groups");
+        System.out.println("(0) Exit");
+        System.out.println("Enter a value: ");
+    }
         System.out.println("Goodbye!");
     }
 }
