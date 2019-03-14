@@ -139,6 +139,38 @@ public class JDBC {
         rs.close();
         stmt.close();
     }
+
+    public static void displayPublisher(Connection conn){
+        try{
+            Statement stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT publisherName, publisherAddress, publisherPhone, publisherEmail FROM Publisher";
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.printf(PUBLISHER_DISPLAY_FORMAT, "Publisher Name", "Publisher Address", "Publisher Phone", "Publisher Email\n");
+            while (rs.next()) {
+                //Retrieve by column name
+                String name = rs.getString("publisherName");
+                String address = rs.getString("publisherAddress");
+                String phone = rs.getString("publisherPhone");
+                String email = rs.getString("publisherEmail");
+                //Display values
+                System.out.printf(PUBLISHER_DISPLAY_FORMAT,
+                dispNull(name), dispNull(address), dispNull(phone), dispNull(email));
+            }
+            System.out.println();
+            //Clean up
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch (Exception e) {
+           //Handle errors for Class.forName
+            e.printStackTrace();
+        }
+    }	    
+	    
     public static void displayBook(Connection conn) throws SQLException
     {
         Statement stmt = null;
@@ -195,6 +227,8 @@ public class JDBC {
             }
         }
     }
+	    
+    
     
     public static void printMenu()
     {
