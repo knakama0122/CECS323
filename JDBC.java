@@ -140,6 +140,39 @@ public class JDBC {
         stmt.close();
     }
 
+    public static void displayGroup(Connection conn){
+        try{
+            Statement stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT groupName, headWriter, yearFormed, subject FROM WritingGroup";
+            ResultSet rs = stmt.executeQuery(sql);
+            //Extract data from result set
+            System.out.println();
+            System.out.printf(WRITING_DISPLAY_FORMAT, "Group name", "Head Writer", "Year Formed", "Subject\n");
+            while (rs.next()) {
+                //Retrieve by column name
+                String name = rs.getString("groupName");
+                String writer = rs.getString("headWriter");
+                String year = rs.getString("yearFormed");
+                String subject = rs.getString("subject");
+                //Display values
+                System.out.printf(WRITING_DISPLAY_FORMAT,
+                dispNull(name), dispNull(writer), dispNull(year), dispNull(subject));
+            }
+            System.out.println();
+            //Clean up
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch (Exception e) {
+           //Handle errors for Class.forName
+           e.printStackTrace();
+        }
+    }
+	    
     public static void displayPublisher(Connection conn){
         try{
             Statement stmt = conn.createStatement();
