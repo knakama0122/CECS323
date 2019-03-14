@@ -132,7 +132,13 @@ public class JDBC {
                 case 3: 
                 displayBook(conn);
                 break;    
-                case 0:
+		case 4:
+		insertBook(conn);
+		break;
+	    	case 5:
+		replacePublisher(conn, insertPublisher(conn));
+		break;
+	    	case 0:
                 break;
             }
         }
@@ -261,7 +267,55 @@ public class JDBC {
         }
     }
 	    
-    
+    public static String insertPublisher(Connection conn) throws SQLException
+    {
+        PreparedStatement st = null;
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter a publisher name: ");
+        String newPName = in.nextLine();
+        System.out.println("Enter a publisher address: ");
+        String addr = in.nextLine();
+        System.out.println("Enter a publisher phone: ");
+        String phone = in.nextLine();        
+        System.out.println("Enter the publisher email: ");
+        String email = in.nextLine();
+        String sql = "INSERT INTO Publisher (PublisherName, PublisherAddress, publisherPhone, PublisherEmail) values (?,?,?,?)";
+        try{
+        st = conn.prepareStatement(sql);
+        st.setString(1, newPName);
+        st.setString(2, addr);
+        st.setString(3, phone);
+        st.setString(4, email);
+        st.execute();
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+	} finally {
+            if (st != null) {
+            st.close();
+            }
+        }
+        return newPName;
+    }
+    public static void replacePublisher(Connection conn, String newPName) throws SQLException
+    {
+        Scanner in = new Scanner(System.in);
+        PreparedStatement stmt = null;
+        System.out.println("Enter the publisher name to update: ");
+        String pname = in.nextLine();
+        String sql2 = "UPDATE Book SET publisherName = ? WHERE publisherName = ?";
+        
+        try{
+        stmt = conn.prepareStatement(sql2);
+        stmt.setString(1, newPName);
+        stmt.setString(2, pname);
+        stmt.execute();
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally{
+            if(stmt != null)
+            stmt.close();
+        }        
+    }
     
     public static void printMenu()
     {
