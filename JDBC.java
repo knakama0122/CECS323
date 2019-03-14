@@ -130,23 +130,7 @@ public class JDBC {
                     }
                 break;
                 case 3: 
-                //STEP 4: Execute a query
-                    System.out.println("Creating statement...");
-                    stmt = conn.createStatement();
-                    sql = "SELECT GroupName, HeadWriter, YearFormed, Subject FROM WritingGroup";
-                    rs = stmt.executeQuery(sql);
-                //STEP 5: Extract data from result set
-                    System.out.printf(WRITING_DISPLAY_FORMAT, "Group Name","Head Writer", "Year Formed", "Subject");
-                    while (rs.next()) {
-                    //Retrieve by column name
-                    String gname = rs.getString("GroupName");
-                    String hwriter = rs.getString("HeadWriter");
-                    String year = rs.getString("YearFormed");
-                    String subject = rs.getString("Subject");
-                    //Display values
-                    System.out.printf(WRITING_DISPLAY_FORMAT,
-                        dispNull(gname), dispNull(hwriter), dispNull(year), dispNull(subject));
-                    }
+                displayBook(conn);
                 break;    
                 case 0:
                 break;
@@ -154,6 +138,62 @@ public class JDBC {
         }
         rs.close();
         stmt.close();
+    }
+    public static void displayBook(Connection conn) throws SQLException
+    {
+        Statement stmt = null;
+        String sql = null;
+        ResultSet rs = null;
+        //STEP 4: Execute a query
+        System.out.println("Creating statement...");
+        stmt = conn.createStatement();
+        sql = "SELECT GroupName, HeadWriter, YearFormed, Subject FROM WritingGroup";
+        rs = stmt.executeQuery(sql);
+        //STEP 5: Extract data from result set
+        System.out.printf(WRITING_DISPLAY_FORMAT, "Group Name","Head Writer", "Year Formed", "Subject");
+        while (rs.next()) {
+        //Retrieve by column name
+        String gname = rs.getString("GroupName");
+        String hwriter = rs.getString("HeadWriter");
+        String year = rs.getString("YearFormed");
+        String subject = rs.getString("Subject");
+        //Display values
+        System.out.printf(WRITING_DISPLAY_FORMAT,
+        dispNull(gname), dispNull(hwriter), dispNull(year), dispNull(subject));
+        }
+    }        
+    
+    public static void insertBook(Connection conn) throws SQLException
+    {
+        PreparedStatement st = null;
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter a group name: ");
+        String gname = in.nextLine();
+        System.out.println("Enter a book title: ");
+        String title = in.nextLine();
+        System.out.println("Enter a publisher name: ");
+        String pname = in.nextLine();        
+        System.out.println("Enter the year published: ");
+        String year = in.nextLine();
+        System.out.println("Enter the number of pages: ");
+        String pages = in.nextLine();        
+        String sql = "INSERT INTO Book (groupName, bookTitle, publisherName, yearPublished, numberPages) values (?,?,?,?,?)";
+        
+        try{
+        st = conn.prepareStatement(sql);
+        st.setString(1, gname);
+        st.setString(2, title);
+        st.setString(3, pname);
+        st.setString(4, year);
+        st.setString(5, pages);
+        st.execute();
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+	} finally {
+            if (st != null) {
+            st.close();
+            }
+        }
     }
     
     public static void printMenu()
