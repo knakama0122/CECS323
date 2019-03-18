@@ -127,14 +127,14 @@ public class JDBC {
                 case 3:
                     displayBook(conn);
                     break;
-            		case 4:
-                		insertBook(conn);
-                		break;
-        	    	case 5:
-                		replacePublisher(conn, insertPublisher(conn));
-                		break;
-        	    	case 0:
+                case 4:
+                    insertBook(conn);
                     break;
+                case 5:
+                    replacePublisher(conn, insertPublisher(conn));
+                    break;
+                case 0:
+                break;
             }
         }
         rs.close();
@@ -243,7 +243,7 @@ public class JDBC {
         String pages = in.nextLine();
         String sql = "INSERT INTO Book (groupName, , publisherName, yearPublished, numberPages) values (?,?,?,?,?)";
 
-        try{
+        try {
             st = conn.prepareStatement(sql);
             st.setString(1, gname);
             st.setString(2, title);
@@ -251,7 +251,7 @@ public class JDBC {
             st.setString(4, year);
             st.setString(5, pages);
             st.execute();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             System.out.println(e.getMessage());
       	} finally {
               if (st != null) {
@@ -272,7 +272,7 @@ public class JDBC {
         System.out.println("Enter the publisher email: ");
         String email = in.nextLine();
         String sql = "INSERT INTO Publisher (PublisherName, PublisherAddress, publisherPhone, PublisherEmail) values (?,?,?,?)";
-        try{
+        try {
             st = conn.prepareStatement(sql);
             st.setString(1, newPName);
             st.setString(2, addr);
@@ -297,12 +297,12 @@ public class JDBC {
         String pname = in.nextLine();
         String sql2 = "UPDATE Book SET publisherName = ? WHERE publisherName = ?";
 
-        try{
+        try {
             stmt = conn.prepareStatement(sql2);
             stmt.setString(1, newPName);
             stmt.setString(2, pname);
             stmt.execute();
-        }catch (SQLException e){
+        } catch (SQLException e){
             System.out.println(e.getMessage());
         } finally {
         	in.close();
@@ -363,7 +363,7 @@ public class JDBC {
             System.out.println(e.getMessage());
         } finally {
         	in.close();
-        stmt.close();
+            stmt.close();
         }
     }
 
