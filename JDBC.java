@@ -312,7 +312,7 @@ public class JDBC {
         }
     }
 
-    public static void removeBook(Connection conn, String bookName) throws SQLException {
+    public static void removeBook(Connection conn) throws SQLException {
         boolean bookExists = false;
         boolean wgExists = false;
         String book;
