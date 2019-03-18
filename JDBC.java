@@ -23,7 +23,7 @@ public class JDBC {
             return input;
     }
 
-    public static void main(String[] args) {
+      public static void main(String[] args) {
         DB_URL = DB_URL + DBNAME + ";user="+ USER + ";password=" + PASS;
         Connection conn = null; //initialize the connection
         Statement stmt = null;  //initialize the statement that we're using
@@ -33,29 +33,7 @@ public class JDBC {
             conn = DriverManager.getConnection(DB_URL);
 
             //Execute a query
-            System.out.println("Creating statement...");
-            stmt = conn.createStatement();
-            String sql;
-            sql = "SELECT groupname, booktitle, publishername, yearpublished, numberpages FROM book";
-            ResultSet rs = stmt.executeQuery(sql);
-
-            //Extract data from result set
-            System.out.printf(BOOK_DISPLAY_FORMAT, "Group Name","Book Title", "Publisher Name", "Year Published", "# of Pages");
-            while (rs.next()) {
-                //Retrieve by column name
-                String group = rs.getString("groupname");
-                String title = rs.getString("booktitle");
-                String publisher = rs.getString("publishername");
-                String year = rs.getString("yearpublished");
-                String pages = rs.getString("numberpages");
-
-                //Display values
-                System.out.printf(BOOK_DISPLAY_FORMAT,
-                        dispNull(group), dispNull(title), dispNull(publisher), dispNull(year), dispNull(pages));
-            }
-            rs.close();
-            stmt.close();
-            conn.close();
+            menu(conn);
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -81,64 +59,52 @@ public class JDBC {
     }
     public static void menu(Connection conn) throws SQLException {
         int x = 1;
+        String y = "1";
         Statement stmt = null;
         String sql = null;
         ResultSet rs = null;
-        Scanner in = new Scanner(System.in);
+        Scanner input = new Scanner(System.in);
         while(x != 0) {
             printMenu();
-            x = in.nextInt();
+            y = input.nextLine();
+            try{
+            x = Integer.parseInt(y);
+            }catch (Exception e)
+            {
+                System.out.println("Invalid value. \n Please try again");
+                x = -1;
+            }
             switch(x){
                 case 1:
-                    System.out.println("Creating statement...");
-                    stmt = conn.createStatement();
-                    sql = "SELECT groupname, booktitle, publishername, yearpublished, numberpages FROM book";
-                    rs = stmt.executeQuery(sql);
-                    System.out.printf(BOOK_DISPLAY_FORMAT, "Group Name","Book Title", "Publisher Name", "Year Published", "# of Pages");
-                    while (rs.next()) {
-                        //Retrieve by column name
-                        String group = rs.getString("groupname");
-                        String title = rs.getString("");
-                        String publisher = rs.getString("publishername");
-                        String year = rs.getString("yearpublished");
-                        String pages = rs.getString("numberpages");
-                        //Display values
-                        System.out.printf(BOOK_DISPLAY_FORMAT,
-                            dispNull(group), dispNull(title), dispNull(publisher), dispNull(year), dispNull(pages));
-                    }
-                break;
+                    displayBook(conn);
+                    break;
                 case 2:
-                    System.out.println("Creating statement...");
-                    stmt = conn.createStatement();
-                    sql = "SELECT PublisherName, PublisherAddress, PublisherPhone, PublisherEmail FROM Publisher";
-                    rs = stmt.executeQuery(sql);
-                    System.out.printf(PUBLISHER_DISPLAY_FORMAT, "Publisher Name","Address", "Phone Number", "Email Address");
-                    while (rs.next()) {
-                        //Retrieve by column name
-                        String pname = rs.getString("PublisherName");
-                        String paddr = rs.getString("PublisherAddress");
-                        String pphone = rs.getString("PublisherPhone");
-                        String pemail = rs.getString("PublisherEmail");
-                        //Display values
-                        System.out.printf(PUBLISHER_DISPLAY_FORMAT,
-                            dispNull(pname), dispNull(paddr), dispNull(pphone), dispNull(pemail));
-                    }
+                    displayPublisher(conn);
                 break;
                 case 3:
-                    displayBook(conn);
+                    displayGroup(conn);
                     break;
                 case 4:
                     insertBook(conn);
                     break;
                 case 5:
+                    removeBook(conn);
+                    break;
+                case 6:
                     replacePublisher(conn, insertPublisher(conn));
                     break;
                 case 0:
                 break;
+                default: 
+                    System.out.println("Invalid value");
+                    break;
             }
+            if(x != 0)
+                x = 1;
         }
         rs.close();
         stmt.close();
+        input.close();
     }
 
     public static void displayGroup(Connection conn) {
@@ -212,20 +178,21 @@ public class JDBC {
         //STEP 4: Execute a query
         System.out.println("Creating statement...");
         stmt = conn.createStatement();
-        sql = "SELECT GroupName, HeadWriter, YearFormed, Subject FROM WritingGroup";
+        sql = "SELECT groupname, booktitle, publishername, yearpublished, numberpages FROM book";
         rs = stmt.executeQuery(sql);
         //STEP 5: Extract data from result set
-        System.out.printf(WRITING_DISPLAY_FORMAT, "Group Name","Head Writer", "Year Formed", "Subject");
+        System.out.printf(BOOK_DISPLAY_FORMAT, "Group Name","Book Title", "Publisher Name", "Year Published", "# of Pages");
         while (rs.next()) {
             //Retrieve by column name
-            String gname = rs.getString("GroupName");
-            String hwriter = rs.getString("HeadWriter");
-            String year = rs.getString("YearFormed");
-            String subject = rs.getString("Subject");
+            String group = rs.getString("groupname");
+            String title = rs.getString("booktitle");
+            String publisher = rs.getString("publishername");
+            String year = rs.getString("yearpublished");
+            String pages = rs.getString("numberpages");
             //Display values
-            System.out.printf(WRITING_DISPLAY_FORMAT,
-            dispNull(gname), dispNull(hwriter), dispNull(year), dispNull(subject));
-        }
+            System.out.printf(BOOK_DISPLAY_FORMAT,
+                dispNull(group), dispNull(title), dispNull(publisher), dispNull(year), dispNull(pages));
+            }
     }
 
     public static void insertBook(Connection conn) throws SQLException {
@@ -241,7 +208,7 @@ public class JDBC {
         String year = in.nextLine();
         System.out.println("Enter the number of pages: ");
         String pages = in.nextLine();
-        String sql = "INSERT INTO Book (groupName, , publisherName, yearPublished, numberPages) values (?,?,?,?,?)";
+        String sql = "INSERT INTO Book (groupName, bookTitle, publisherName, yearPublished, numberPages) values (?,?,?,?,?)";
 
         try {
             st = conn.prepareStatement(sql);
@@ -315,6 +282,7 @@ public class JDBC {
     public static void removeBook(Connection conn) throws SQLException {
         boolean bookExists = false;
         boolean wgExists = false;
+        PreparedStatement st = null;
         String book;
         String writer;
         Statement stmt = null;
@@ -323,10 +291,10 @@ public class JDBC {
         book = in.nextLine();
         try {
             stmt = conn.createStatement();
-            String sql = "SELECT book FROM Books";
+            String sql = "SELECT bookTitle FROM Book";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()){
-                String removeBook = rs.getString("");
+                String removeBook = rs.getString("bookTitle");
                 if (removeBook.equals (book)){
                     bookExists = true;
                 }
@@ -337,10 +305,10 @@ public class JDBC {
             else {
                 System.out.println("What is the writing group of your book?");
                 writer = in.nextLine();
-                stmt = conn.createStatement();
-                String gsql;
-                gsql = "SELECT groupName FROM Books WHERE groupName = '" + writer +"'";
-                rs = stmt.executeQuery(gsql);
+                String gsql = "SELECT groupName FROM Book WHERE groupName = ?";
+                PreparedStatement stmt2 = conn.prepareStatement(gsql);
+                stmt2.setString(1, writer);
+                rs = stmt2.executeQuery();
                 while (rs.next()){
                     String removeWriter = rs.getString("groupName");
                     if (removeWriter.equals(writer)){
@@ -351,26 +319,33 @@ public class JDBC {
                     System.out.println("The writing group you chose does not exist.\n");
                 }
                 else {
-                    stmt = conn.createStatement();
-                    String rsql = "DELETE FROM Books WHERE bookTitle = '" + book + "' AND groupName = '" + writer + "'";
-                    stmt.executeUpdate(rsql);
+                    String rsql = "DELETE FROM Book WHERE bookTitle = ? AND groupName = ?";
+                    st = conn.prepareStatement(rsql);
+                    st.setString(1, book);
+                    st.setString(2, writer);
+                    st.execute();
                     System.out.println( "\nYour book has been deleted from the database");
-                    System.out.println("\nUpdated table: \n");
-                    displayBook(conn);
                 }
             }
         } catch (SQLException e){
             System.out.println(e.getMessage());
         } finally {
-        	in.close();
+        if(stmt != null)
             stmt.close();
+        if(st != null)
+            st.close();
         }
+       // in.close();
     }
+    
 
     public static void printMenu() {
         System.out.println("(1) Display Books");
         System.out.println("(2) Display Publishers");
         System.out.println("(3) Display Writing Groups");
+        System.out.println("(4) Insert Book");
+        System.out.println("(5) Remove Book");
+        System.out.println("(6) Change publisher");
         System.out.println("(0) Exit");
         System.out.println("Enter a value: ");
     }
