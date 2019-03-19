@@ -130,7 +130,7 @@ public class JDBC {
             //Clean up
             rs.close();
             stmt.close();
-            conn.close();
+            //conn.close();
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -161,7 +161,7 @@ public class JDBC {
             //Clean up
             rs.close();
             stmt.close();
-            conn.close();
+            //conn.close();
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
