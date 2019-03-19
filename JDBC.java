@@ -5,9 +5,12 @@ public class JDBC {
     static String USER = "root";
     static String PASS = "toor";
     static String DBNAME = "test";
-    static final String WRITING_DISPLAY_FORMAT ="%-55s%-55s%-30s%-20s\n";
+    static final String WRITING_DISPLAY_FORMAT ="%-55s%-55s%-10s%-20s\n";
     static final String PUBLISHER_DISPLAY_FORMAT = "%-55s%-55s%-25s%-40s\n";
-    static final String BOOK_DISPLAY_FORMAT = "%-55s%-55s%-50s%-4s%-4s\n";
+    static final String BOOK_DISPLAY_FORMAT = "%-55s%-55s%-50s%-5s%-5s\n";
+    static final String BOOK_DATA_FORMAT = "%-55s%-55s%-55s%-15s%-15s%-55s%-55s%-55s%-55s%-15s%-55s\n";  
+    static final String PUBLISHER_DATA_FORMAT = "%-55s%-55s%-55s%-55s%-55s%-55s%-16s%-16s%-55s%-15s%-55s\n";  
+    static final String GROUP_DATA_FORMAT = "%-55s%-55s%-15s%-55s%-55s%-55s%-15s%-16s%-55s%-55s%-55s\n";
     static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";
     static String DB_URL = "jdbc:derby://localhost:1527/";
 
@@ -23,7 +26,7 @@ public class JDBC {
             return input;
     }
 
-      public static void main(String[] args) {
+    public static void main(String[] args) {
         DB_URL = DB_URL + DBNAME + ";user="+ USER + ";password=" + PASS;
         Connection conn = null; //initialize the connection
         Statement stmt = null;  //initialize the statement that we're using
@@ -85,12 +88,21 @@ public class JDBC {
                     displayGroup(conn);
                     break;
                 case 4:
-                    insertBook(conn);
+                    bookData(conn);
                     break;
                 case 5:
-                    removeBook(conn);
+                    publisherData(conn);
                     break;
                 case 6:
+                    groupData(conn);
+                    break;
+                case 7:
+                    insertBook(conn);
+                    break;
+                case 8:
+                    removeBook(conn);
+                    break;
+                case 9:
                     replacePublisher(conn, insertPublisher(conn));
                     break;
                 case 0:
@@ -102,8 +114,10 @@ public class JDBC {
             if(x != 0)
                 x = 1;
         }
-        rs.close();
-        stmt.close();
+        if(rs != null)
+            rs.close();
+        if(rs != null)
+            stmt.close();
         input.close();
     }
 
@@ -120,17 +134,16 @@ public class JDBC {
                 //Retrieve by column name
                 String name = rs.getString("groupName");
                 String writer = rs.getString("headWriter");
-                String year = rs.getString("yearFormed");
+                int year = rs.getInt("yearFormed");
                 String subject = rs.getString("subject");
                 //Display values
                 System.out.printf(WRITING_DISPLAY_FORMAT,
-                dispNull(name), dispNull(writer), dispNull(year), dispNull(subject));
+                dispNull(name), dispNull(writer), dispNull(Integer.toString(year)), dispNull(subject));
             }
             System.out.println();
             //Clean up
             rs.close();
             stmt.close();
-            //conn.close();
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -161,7 +174,6 @@ public class JDBC {
             //Clean up
             rs.close();
             stmt.close();
-            //conn.close();
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -187,12 +199,16 @@ public class JDBC {
             String group = rs.getString("groupname");
             String title = rs.getString("booktitle");
             String publisher = rs.getString("publishername");
-            String year = rs.getString("yearpublished");
+            int year = rs.getInt("yearpublished");
             String pages = rs.getString("numberpages");
             //Display values
             System.out.printf(BOOK_DISPLAY_FORMAT,
-                dispNull(group), dispNull(title), dispNull(publisher), dispNull(year), dispNull(pages));
+                dispNull(group), dispNull(title), dispNull(publisher), dispNull(Integer.toString(year)), dispNull(pages));
             }
+        if(rs != null)
+            rs.close();
+        if(stmt != null)
+            stmt.close();
     }
 
     public static void insertBook(Connection conn) throws SQLException {
@@ -209,7 +225,6 @@ public class JDBC {
         System.out.println("Enter the number of pages: ");
         String pages = in.nextLine();
         String sql = "INSERT INTO Book (groupName, bookTitle, publisherName, yearPublished, numberPages) values (?,?,?,?,?)";
-
         try {
             st = conn.prepareStatement(sql);
             st.setString(1, gname);
@@ -221,14 +236,17 @@ public class JDBC {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
       	} finally {
-              if (st != null) {
-                  st.close();
-              }
+            if (st != null) 
+                st.close();              
         }
     }
 
     public static String insertPublisher(Connection conn) throws SQLException {
         PreparedStatement st = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        int count = 0;
+        int count2 = 0;
         Scanner in = new Scanner(System.in);
         System.out.println("Enter a publisher name: ");
         String newPName = in.nextLine();
@@ -239,26 +257,44 @@ public class JDBC {
         System.out.println("Enter the publisher email: ");
         String email = in.nextLine();
         String sql = "INSERT INTO Publisher (PublisherName, PublisherAddress, publisherPhone, PublisherEmail) values (?,?,?,?)";
+        String sql2= "SELECT COUNT(*) AS TOTAL FROM Publisher";
         try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql2);
+            while (rs.next())
+                count = rs.getInt(1);
             st = conn.prepareStatement(sql);
             st.setString(1, newPName);
             st.setString(2, addr);
             st.setString(3, phone);
             st.setString(4, email);
             st.execute();
+            while (rs.next())
+                count2 = rs.getInt(1);
+            rs = stmt.executeQuery(sql2);
+            if(count != count2)
+                count = -1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
       	} finally {
-              if (st != null) {
-                  st.close();
-              }
+            if (st != null) 
+                st.close();
+            if (stmt != null)
+                stmt.close();
+            if(rs != null)
+                rs.close();
+            if(count == -1){
+                System.out.println("New Publisher Added Successfully added!");
+                return newPName;
+            }
         }
-        in.close();
-        return newPName;
+        return null;
     }
 
     public static void replacePublisher(Connection conn, String newPName) throws SQLException {
-    	Scanner in = new Scanner(System.in);
+    	if(newPName == null)
+            return;
+        Scanner in = new Scanner(System.in);
         PreparedStatement stmt = null;
         System.out.println("Enter the publisher name to update: ");
         String pname = in.nextLine();
@@ -272,7 +308,6 @@ public class JDBC {
         } catch (SQLException e){
             System.out.println(e.getMessage());
         } finally {
-        	in.close();
         }
         if(stmt != null) {
             stmt.close();
@@ -338,33 +373,135 @@ public class JDBC {
        // in.close();
     }
     
-    public static void listGroupData(Connection conn) throws SQLException {
-        Statement stmt = null;
+    public static void bookData(Connection conn) throws SQLException
+    {
         Scanner in = new Scanner(System.in);
-        String groupData;
-        System.out.println("Enter name of the group you would like to display data for: ");
-        groupData = in.nextLine();
+        PreparedStatement stmt = null;
+        System.out.println("Enter a book title to display: ");
+        String title = in.nextLine();
+        String sql = "SELECT * FROM (Book NATURAL JOIN WritingGroup) INNER JOIN Publisher using (publisherName) where bookTitle = ?";
+        ResultSet rs = null;
         try {
-            conn.createStatement();
-            String gdataSQL = "SELECT groupname, headwriter, yearformed, subject, booktitle, publishername, yearpublished, publisheraddress, publisheremail from writinggroup NATURAL JOIN book NATURAL JOIN publisher WHERE groupname = '" + groupData +"'";
-            ResultSet rs = stmt.executeQuery(gdataSQL);
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1,title);
+            rs = stmt.executeQuery();
+            System.out.printf(BOOK_DATA_FORMAT, "Group Name","Publisher Name","Title of Book","Year Published","Number of Pages","Address","Phone Number", "Email Address","Head Writer","Year Formed","Subject");
+            while(rs.next())
+            {
+                String gname = rs.getString("groupName");
+                String pname = rs.getString("publisherName");
+                title = rs.getString("booktitle");
+                int yearp = rs.getInt("yearPublished");
+                int pages = rs.getInt("numberPages");
+                String addr = rs.getString("publisherAddress");
+                String phone = rs.getString("publisherPhone");
+                String email = rs.getString("publisherEmail");
+                String hw = rs.getString("headWriter");
+                int yearf = rs.getInt("yearFormed");
+                String subject = rs.getString("Subject");
+
+                System.out.printf(BOOK_DATA_FORMAT, dispNull(gname),dispNull(pname),
+                        dispNull(title),dispNull(Integer.toString(yearp)),
+                        dispNull(Integer.toString(pages)), dispNull(addr),
+                        dispNull(phone),dispNull(email), dispNull(hw), dispNull(Integer.toString(yearf)), dispNull(subject));
+            }
         } catch (SQLException e){
             System.out.println(e.getMessage());
-        } finally {
-            in.close();
-        }
-        if (stmt != null) {
+        } finally {}
+        if(stmt != null) {
             stmt.close();
         }
     }
+    
+    public static void publisherData(Connection conn) throws SQLException
+    {
+        Scanner in = new Scanner(System.in);
+        PreparedStatement stmt = null;
+        System.out.println("Enter the publisher name to display: ");
+        String pname = in.nextLine();
+        String sql = "SELECT * FROM Publisher INNER JOIN (Book NATURAL JOIN WritingGroup) using (publisherName) where publisherName = ?";
+        ResultSet rs = null;
+        try {
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1,pname);
+            rs = stmt.executeQuery();
+            System.out.printf(PUBLISHER_DATA_FORMAT, "Publisher Name","Address","Phone Number", "Email Address","Group Name","Title of Book","Year Published","Number of Pages","Head Writer","Year Formed","Subject");
+            while(rs.next())
+            {
+                pname = rs.getString("publisherName");
+                String addr = rs.getString("publisherAddress");
+                String phone = rs.getString("publisherPhone");
+                String email = rs.getString("publisherEmail");
+                String gname = rs.getString("groupName");
+                String title = rs.getString("booktitle");
+                int yearp = rs.getInt("yearPublished");
+                int pages = rs.getInt("numberPages");
+                String hw = rs.getString("headWriter");
+                int yearf = rs.getInt("yearFormed");
+                String subject = rs.getString("Subject");
 
+                System.out.printf(PUBLISHER_DATA_FORMAT, dispNull(pname),dispNull(addr),
+                        dispNull(phone),dispNull(email),dispNull(gname),dispNull(title),
+                        dispNull(Integer.toString(yearp)),dispNull(Integer.toString(pages)),
+                        dispNull(hw),dispNull(Integer.toString(yearf)), dispNull(subject));
+            }
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally {}
+        if(stmt != null) {
+            stmt.close();
+        }
+    }
+    
+    public static void groupData(Connection conn) throws SQLException
+    {
+        Scanner in = new Scanner(System.in);
+        PreparedStatement stmt = null;
+        System.out.println("Enter the Writing Group name to display: ");
+        String gname = in.nextLine();
+        String sql = "SELECT * FROM WritingGroup INNER JOIN (Book NATURAL JOIN Publisher) using(groupName) where groupName = ?";
+        ResultSet rs = null;
+        try {
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1,gname);
+            rs = stmt.executeQuery();
+            System.out.printf(GROUP_DATA_FORMAT, "Group Name","Head Writer","Year Formed","Subject","Publisher Name","Title of Book","Year Published","Number of Pages","Address","Phone Number", "Email Address");
+            while(rs.next())
+            {
+                gname = rs.getString("groupName");
+                String hw = rs.getString("headWriter");
+                int yearf = rs.getInt("yearFormed");
+                String subject = rs.getString("Subject");
+                String pname = rs.getString("publisherName");
+                String title = rs.getString("booktitle");
+                int yearp = rs.getInt("yearPublished");
+                int pages = rs.getInt("numberPages");
+                String addr = rs.getString("publisherAddress");
+                String phone = rs.getString("publisherPhone");
+                String email = rs.getString("publisherEmail");
+                System.out.printf(PUBLISHER_DATA_FORMAT, dispNull(gname),
+                        dispNull(hw),dispNull(Integer.toString(yearf)),dispNull(subject),
+                        dispNull(pname),dispNull(title),dispNull(Integer.toString(yearp)),
+                        dispNull(Integer.toString(pages)),dispNull(addr),dispNull(phone), dispNull(email));
+            }
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally {}
+        if(stmt != null) {
+            stmt.close();
+        }
+    }
+    
     public static void printMenu() {
         System.out.println("(1) Display Books");
         System.out.println("(2) Display Publishers");
         System.out.println("(3) Display Writing Groups");
-        System.out.println("(4) Insert Book");
-        System.out.println("(5) Remove Book");
-        System.out.println("(6) Change publisher");
+        System.out.println("(4) List all data for a book");
+        System.out.println("(5) List all data for a publisher");
+        System.out.println("(6) List all data for a writing group");
+        System.out.println("(7) Insert Book");
+        System.out.println("(8) Remove Book");
+        System.out.println("(9) Change publisher");
         System.out.println("(0) Exit");
         System.out.println("Enter a value: ");
     }
