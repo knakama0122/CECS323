@@ -338,6 +338,25 @@ public class JDBC {
        // in.close();
     }
     
+    public static void listGroupData(Connection conn) throws SQLException {
+        Statement stmt = null;
+        Scanner in = new Scanner(System.in);
+        String groupData;
+        System.out.println("Enter name of the group you would like to display data for: ");
+        groupData = in.nextLine();
+        try {
+            conn.createStatement();
+            String gdataSQL = "SELECT groupname, headwriter, yearformed, subject, booktitle, publishername, yearpublished, publisheraddress, publisheremail from writinggroup NATURAL JOIN book NATURAL JOIN publisher WHERE groupname = '" + groupData +"'";
+            ResultSet rs = stmt.executeQuery(gdataSQL);
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally {
+            in.close();
+        }
+        if (stmt != null) {
+            stmt.close();
+        }
+    }
 
     public static void printMenu() {
         System.out.println("(1) Display Books");
